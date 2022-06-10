@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "sstream": "cpp",
+        "*.tcc": "cpp",
+        "memory_resource": "cpp",
+        "iosfwd": "cpp"
+    }
+}
