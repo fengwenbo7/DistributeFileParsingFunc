@@ -37,7 +37,7 @@ int Server::GetListenFd(){
     return this->listen_fd;
 }
 
-int Server::AcceptConnect(CLientInfo& info){
+int Server::AcceptConnect(ClientInfo& info){
     socklen_t len=sizeof(info.client_addr);
     info.client_fd = accept(listen_fd,(struct sockaddr*)&info.client_addr,&len);
     if(info.client_fd==-1){

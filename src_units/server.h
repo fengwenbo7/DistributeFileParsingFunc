@@ -20,7 +20,7 @@ using namespace std;
 
 #define MAX_BUFFER_SIZE 1024
 
-struct CLientInfo
+struct ClientInfo
 {
     sockaddr_in client_addr;
     int client_fd;
@@ -39,7 +39,7 @@ public:
     void Init();
     void Listen();
     int GetListenFd();
-    int AcceptConnect(CLientInfo& info);
+    int AcceptConnect(ClientInfo& info);
     int Write(int sock_fd,char buf[]);
     int Read(int sock_fd,char buf[]);
     virtual ~Server()=default;

@@ -19,7 +19,7 @@ int main(){
     parsing_server.Listen();
 
     while(true){
-        CLientInfo parsing_info;
+        ClientInfo parsing_info;
         SendDirectory sd;
         //get preview info of file
         cout<<"please enter the directory you want to send:\t";
@@ -33,8 +33,6 @@ int main(){
                 cout<<"directory path is illegal,please enter again:\t";
             }
         }
-
-
     }
 }
 
