@@ -24,7 +24,10 @@ public:
     DistributionServer(int port,int size);
     int GetListenFd();
     ClientNode GetClientNode(int fd) const;
-
+    int AcceptConnection(ClientNode& client);
+    int Write(int sock_fd,char buf[]);
+    int Read(int sock_fd,char buf[]);
+    int Close(int sock_fd);
 };
 
 #endif
