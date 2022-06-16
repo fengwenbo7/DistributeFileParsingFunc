@@ -147,20 +147,92 @@ void WebServer::Start(){
             uint32_t events=epoller_->GetEvents(i);
             if(sock_fd==listenFd_){
                 //new client connect
+                DealListen_();
             }
             else if(events&(EPOLLRDHUP|EPOLLHUP|EPOLLERR)){
                 //client disconnect
+                assert(users_.count(sock_fd)>0);
+                DealCloseConn_(&users_[sock_fd]);
             }
             else if(events&EPOLLIN){
                 //deal read
+                assert(users_.count(sock_fd)>0);
+                DealRead_(&users_[sock_fd]);
             }
             else if(events&EPOLLOUT){
                 //deal write
+                assert(users_.count(sock_fd)>0);
+                DealWrite_(&users_[sock_fd]);
             }
             else{
                 std::cout<<"unexpected event."<<std::endl;
             }
         }
+    }
+}
+
+void WebServer::DealListen_(){
+    struct sockaddr_in addr;
+    socklen_t len=sizeof(addr);
+    int conn_fd=accept(listenFd_,(struct sockaddr*)&addr,&len);
+    if(conn_fd<0){
+        std::cout<<"accept error"<<std::endl;
+        close(conn_fd);
+        return;
+    }
+    if(HttpConn::userCount>=MAX_FD){
+        std::cout<<"too many users"<<std::endl;
+        close(conn_fd);
+        return;
+    }
+    users_[conn_fd].init(conn_fd,addr);
+    epoller_->AddFd(conn_fd,EPOLLIN|conn_event_);
+    SetFdNonblock(conn_fd);
+    std::cout<<"client:"<<users_[conn_fd].GetFd()<<" connect.";
+}
+
+void WebServer::DealCloseConn_(HttpConn* client){
+    assert(client);
+    epoller_->DelFd(client->GetFd());
+    client->Close();
+    std::cout<<"client:"<<client->GetFd()<<" disconnect.";
+}
+
+void WebServer::DealRead_(HttpConn* client) {
+    assert(client);
+    threadpool_->AddTask(std::bind(&WebServer::OnRead_, this, client));
+}
+
+void WebServer::DealWrite_(HttpConn* client) {
+    assert(client);
+    threadpool_->AddTask(std::bind(&WebServer::OnWrite_, this, client));
+}
+
+void WebServer::OnRead_(HttpConn* client){
+    assert(client);
+    int read_errno=0;
+    int ret=client->read(&read_errno);
+    if(ret<=0&&read_errno!=EAGAIN){
+        std::cout<<"client:"<<client->GetFd()<<" read error:"<<read_errno<<".it should be closed."<<std::endl;
+        DealCloseConn_(client);
+        return;
+    }
+    OnProcess(client);
+}
+
+void WebServer::OnWrite_(HttpConn* client){
+    assert(client);
+    int write_errno=0;
+    int ret=client->write(&write_errno);
+}
+
+void WebServer::OnProcess(HttpConn* client){
+    //conn_fd is set one-shot,so it should be reseted
+    if(client->process()){
+        epoller_->ModFd(client->GetFd(),EPOLLOUT|conn_event_);
+    }
+    else{
+        epoller_->ModFd(client->GetFd(),EPOLLIN|conn_event_);
     }
 }
 

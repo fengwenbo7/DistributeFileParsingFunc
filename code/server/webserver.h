@@ -18,6 +18,7 @@ fengwenbo 2022-06
 
 #include "epoller.h"
 #include "../http/http_conn.h"
+#include "../pool/thread_pool.h"
 
 enum class TrigMode{
     kNoneET=0,
@@ -40,6 +41,15 @@ private:
     bool InitSocket_(); 
     void InitEventMode_(TrigMode trigMode);
 
+    void DealListen_();
+    void DealCloseConn_(HttpConn* client);
+    void DealWrite_(HttpConn* client);
+    void DealRead_(HttpConn* client);
+    void OnRead_(HttpConn* client);
+    void OnWrite_(HttpConn* client);
+    void OnProcess(HttpConn* client);
+
+    static const int MAX_FD = 65536;
     static int SetFdNonblock(int fd);
 
 private:
@@ -53,7 +63,9 @@ private:
     uint32_t listen_event_;
     uint32_t conn_event_;
 
+    std::unique_ptr<ThreadPool> threadpool_;
     std::unique_ptr<Epoller> epoller_;
+    std::unordered_map<int,HttpConn> users_;//<fd,http_conn>
 };
 
 #endif
