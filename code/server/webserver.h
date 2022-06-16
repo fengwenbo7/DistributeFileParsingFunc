@@ -20,9 +20,10 @@ fengwenbo 2022-06
 #include "../http/http_conn.h"
 
 enum class TrigMode{
-    kConnET=0,
-    kListenET=1,
-    kAllET=2,
+    kNoneET=0,
+    kConnET=1,
+    kListenET=2,
+    kAllET=3,
 };
 
 class WebServer{

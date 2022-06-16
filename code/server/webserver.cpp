@@ -35,17 +35,17 @@ WebServer::WebServer(
 void WebServer::InitEventMode_(TrigMode trigMode) {
     listen_event_=EPOLLRDHUP;//tcp connection closed by the opposite
     conn_event_=EPOLLONESHOT|EPOLLRDHUP;//oneshot should be reactivated when receiving it
-   switch ((int)trigMode)
+   switch (trigMode)
     {
-    case 0:
+    case TrigMode::kNoneET:
         break;
-    case 1:
+    case TrigMode::kConnET:
         conn_event_ |= EPOLLET;
         break;
-    case 2:
+    case TrigMode::kListenET:
         listen_event_ |= EPOLLET;
         break;
-    case 3:
+    case TrigMode::kAllET:
         listen_event_ |= EPOLLET;
         conn_event_ |= EPOLLET;
         break;
