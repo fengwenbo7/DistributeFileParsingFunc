@@ -224,6 +224,21 @@ void WebServer::OnWrite_(HttpConn* client){
     assert(client);
     int write_errno=0;
     int ret=client->write(&write_errno);
+    if(client->ToWriteBytes()==0){
+        //transfer complete
+        if(client->IsKeepAlive()){
+            OnProcess(client);
+            return;
+        }
+    }
+    else if(ret<0){
+        if(write_errno==EAGAIN){
+            //continue to transfer
+            epoller_->ModFd(client->GetFd(),conn_event_|EPOLLOUT);
+            return;
+        }
+    }
+    DealCloseConn_(client);
 }
 
 void WebServer::OnProcess(HttpConn* client){

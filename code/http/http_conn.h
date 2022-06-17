@@ -13,6 +13,7 @@ fenwgenbo 2022-06
 #include <atomic>
 #include "http_request.h"
 #include "http_response.h"
+#include "../buffer/buffer.h"
 
 class HttpConn{
 public:
@@ -27,6 +28,12 @@ public:
     const char* GetIP() const;
     sockaddr_in GetAddr() const;
     bool process();
+    int ToWriteBytes() { 
+        return iov_[0].iov_len + iov_[1].iov_len; 
+    }
+   bool IsKeepAlive() const {
+        return request_.IsKeepAlive();
+    }
 
     static bool isET;
     static const char* srcDir;
@@ -38,6 +45,10 @@ private:
     bool isClose_;
     int iovCnt_;
     struct iovec iov_[2];
+    Buffer read_buffer_;
+    Buffer write_buffer_;
+    HttpRequest request_;
+    HttpResponse response_;
 };
 
 #endif
