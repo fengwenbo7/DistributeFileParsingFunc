@@ -1,7 +1,6 @@
 /*
 fengwenbo 2022-06
 */
-
 #ifndef SQLCONNPOOL_H
 #define SQLCONNPOOL_H
 
@@ -11,6 +10,7 @@ fengwenbo 2022-06
 #include <mutex>
 #include <semaphore.h>
 #include <thread>
+#include "../log/log.h"
 
 class SqlConnPool {
 public:

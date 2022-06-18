@@ -5,10 +5,10 @@ fengwenbo 2022-06
 #ifndef EPOLLER_H
 #define EPOLLER_H
 
-#include <sys/epoll.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <assert.h>
+#include <sys/epoll.h> //epoll_ctl()
+#include <fcntl.h>  // fcntl()
+#include <unistd.h> // close()
+#include <assert.h> // close()
 #include <vector>
 #include <errno.h>
 
@@ -36,4 +36,4 @@ private:
     std::vector<struct epoll_event> events_;    
 };
 
-#endif
+#endif 

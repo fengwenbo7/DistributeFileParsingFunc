@@ -1,7 +1,6 @@
 /*
 fengwenbo 2022-06
 */
-
 #ifndef HTTP_REQUEST_H
 #define HTTP_REQUEST_H
 
@@ -13,6 +12,7 @@ fengwenbo 2022-06
 #include <mysql/mysql.h>  //mysql
 
 #include "../buffer/buffer.h"
+#include "../log/log.h"
 #include "../pool/sql_conn_pool.h"
 #include "../pool/sql_conn_RAII.h"
 

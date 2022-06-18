@@ -50,4 +50,4 @@ private:
     std::atomic<std::size_t> writePos_;
 };
 
-#endif //BUFFER_H
+#endif

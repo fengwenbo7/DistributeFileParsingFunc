@@ -1,7 +1,6 @@
 /*
 fengwenbo 2022-06
 */
-
 #ifndef HTTP_RESPONSE_H
 #define HTTP_RESPONSE_H
 
@@ -12,6 +11,7 @@ fengwenbo 2022-06
 #include <sys/mman.h>    // mmap, munmap
 
 #include "../buffer/buffer.h"
+#include "../log/log.h"
 
 class HttpResponse {
 public:

@@ -1,5 +1,4 @@
 #include "http_conn.h"
-#include <assert.h>
 using namespace std;
 
 const char* HttpConn::srcDir;
@@ -21,9 +20,10 @@ void HttpConn::init(int fd, const sockaddr_in& addr) {
     userCount++;
     addr_ = addr;
     fd_ = fd;
-    write_buffer_.RetrieveAll();
-    read_buffer_.RetrieveAll();
+    writeBuff_.RetrieveAll();
+    readBuff_.RetrieveAll();
     isClose_ = false;
+    LOG_INFO("Client[%d](%s:%d) in, userCount:%d", fd_, GetIP(), GetPort(), (int)userCount);
 }
 
 void HttpConn::Close() {
@@ -32,7 +32,7 @@ void HttpConn::Close() {
         isClose_ = true; 
         userCount--;
         close(fd_);
-        std::cout<<"Client["<<fd_<<"]("<<GetIP()<<":"<<GetPort()<<") quit, UserCount:"<< (int)userCount<<std::endl;
+        LOG_INFO("Client[%d](%s:%d) quit, UserCount:%d", fd_, GetIP(), GetPort(), (int)userCount);
     }
 }
 
@@ -52,11 +52,10 @@ int HttpConn::GetPort() const {
     return addr_.sin_port;
 }
 
-
 ssize_t HttpConn::read(int* saveErrno) {
     ssize_t len = -1;
     do {
-        len = read_buffer_.ReadFd(fd_, saveErrno);
+        len = readBuff_.ReadFd(fd_, saveErrno);
         if (len <= 0) {
             break;
         }
@@ -77,14 +76,14 @@ ssize_t HttpConn::write(int* saveErrno) {
             iov_[1].iov_base = (uint8_t*) iov_[1].iov_base + (len - iov_[0].iov_len);
             iov_[1].iov_len -= (len - iov_[0].iov_len);
             if(iov_[0].iov_len) {
-                write_buffer_.RetrieveAll();
+                writeBuff_.RetrieveAll();
                 iov_[0].iov_len = 0;
             }
         }
         else {
             iov_[0].iov_base = (uint8_t*)iov_[0].iov_base + len; 
             iov_[0].iov_len -= len; 
-            write_buffer_.Retrieve(len);
+            writeBuff_.Retrieve(len);
         }
     } while(isET || ToWriteBytes() > 10240);
     return len;
@@ -92,20 +91,20 @@ ssize_t HttpConn::write(int* saveErrno) {
 
 bool HttpConn::process() {
     request_.Init();
-    if(read_buffer_.ReadableBytes() <= 0) {
+    if(readBuff_.ReadableBytes() <= 0) {
         return false;
     }
-    else if(request_.parse(read_buffer_)) {
-        std::cout<<request_.path().c_str()<<std::endl;
+    else if(request_.parse(readBuff_)) {
+        LOG_DEBUG("%s", request_.path().c_str());
         response_.Init(srcDir, request_.path(), request_.IsKeepAlive(), 200);
     } else {
         response_.Init(srcDir, request_.path(), false, 400);
     }
 
-    response_.MakeResponse(write_buffer_);
+    response_.MakeResponse(writeBuff_);
     /* 响应头 */
-    iov_[0].iov_base = const_cast<char*>(write_buffer_.Peek());
-    iov_[0].iov_len = write_buffer_.ReadableBytes();
+    iov_[0].iov_base = const_cast<char*>(writeBuff_.Peek());
+    iov_[0].iov_len = writeBuff_.ReadableBytes();
     iovCnt_ = 1;
 
     /* 文件 */
@@ -114,6 +113,6 @@ bool HttpConn::process() {
         iov_[1].iov_len = response_.FileLen();
         iovCnt_ = 2;
     }
-    std::cout<<"filesize:"<<response_.FileLen()<<","<<iovCnt_<<"to "<< ToWriteBytes()<<std::endl;
+    LOG_DEBUG("filesize:%d, %d  to %d", response_.FileLen() , iovCnt_, ToWriteBytes());
     return true;
 }

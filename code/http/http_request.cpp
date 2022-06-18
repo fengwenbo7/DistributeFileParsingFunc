@@ -53,7 +53,7 @@ bool HttpRequest::parse(Buffer& buff) {
         if(lineEnd == buff.BeginWrite()) { break; }
         buff.RetrieveUntil(lineEnd + 2);
     }
-    std::cout<<method_.c_str()<<","<< path_.c_str()<<","<<version_.c_str()<<std::endl;
+    LOG_DEBUG("[%s], [%s], [%s]", method_.c_str(), path_.c_str(), version_.c_str());
     return true;
 }
 
@@ -81,7 +81,7 @@ bool HttpRequest::ParseRequestLine_(const string& line) {
         state_ = HEADERS;
         return true;
     }
-    std::cout<<"RequestLine Error"<<std::endl;
+    LOG_ERROR("RequestLine Error");
     return false;
 }
 
@@ -100,7 +100,7 @@ void HttpRequest::ParseBody_(const string& line) {
     body_ = line;
     ParsePost_();
     state_ = FINISH;
-    std::cout<<"Body:"<<line.c_str()<<", len:"<<line.size()<<std::endl;
+    LOG_DEBUG("Body:%s, len:%d", line.c_str(), line.size());
 }
 
 int HttpRequest::ConverHex(char ch) {
@@ -114,7 +114,7 @@ void HttpRequest::ParsePost_() {
         ParseFromUrlencoded_();
         if(DEFAULT_HTML_TAG.count(path_)) {
             int tag = DEFAULT_HTML_TAG.find(path_)->second;
-            std::cout<<"Tag:"<<tag<<std::endl;
+            LOG_DEBUG("Tag:%d", tag);
             if(tag == 0 || tag == 1) {
                 bool isLogin = (tag == 1);
                 if(UserVerify(post_["username"], post_["password"], isLogin)) {
@@ -156,7 +156,7 @@ void HttpRequest::ParseFromUrlencoded_() {
             value = body_.substr(j, i - j);
             j = i + 1;
             post_[key] = value;
-            std::cout<<key.c_str()<<"="<< value.c_str()<<std::endl;
+            LOG_DEBUG("%s = %s", key.c_str(), value.c_str());
             break;
         default:
             break;
@@ -171,7 +171,7 @@ void HttpRequest::ParseFromUrlencoded_() {
 
 bool HttpRequest::UserVerify(const string &name, const string &pwd, bool isLogin) {
     if(name == "" || pwd == "") { return false; }
-    std::cout<<"Verify name:"<<name.c_str()<<" pwd:"<< pwd.c_str()<<std::endl;
+    LOG_INFO("Verify name:%s pwd:%s", name.c_str(), pwd.c_str());
     MYSQL* sql;
     SqlConnRAII(&sql,  SqlConnPool::Instance());
     assert(sql);
@@ -185,7 +185,7 @@ bool HttpRequest::UserVerify(const string &name, const string &pwd, bool isLogin
     if(!isLogin) { flag = true; }
     /* 查询用户及密码 */
     snprintf(order, 256, "SELECT username, password FROM user WHERE username='%s' LIMIT 1", name.c_str());
-    std::cout<<order<<std::endl;
+    LOG_DEBUG("%s", order);
 
     if(mysql_query(sql, order)) { 
         mysql_free_result(res);
@@ -196,37 +196,37 @@ bool HttpRequest::UserVerify(const string &name, const string &pwd, bool isLogin
     fields = mysql_fetch_fields(res);
 
     while(MYSQL_ROW row = mysql_fetch_row(res)) {
-        std::cout<<"MYSQL ROW:"<<row[0]<<" "<< row[1]<<std::endl;
+        LOG_DEBUG("MYSQL ROW: %s %s", row[0], row[1]);
         string password(row[1]);
         /* 注册行为 且 用户名未被使用*/
         if(isLogin) {
             if(pwd == password) { flag = true; }
             else {
                 flag = false;
-                std::cout<<"pwd error!"<<std::endl;
+                LOG_DEBUG("pwd error!");
             }
         } 
         else { 
             flag = false; 
-            std::cout<<"user used!"<<std::endl;
+            LOG_DEBUG("user used!");
         }
     }
     mysql_free_result(res);
 
     /* 注册行为 且 用户名未被使用*/
     if(!isLogin && flag == true) {
-        std::cout<<"regirster!"<<std::endl;
+        LOG_DEBUG("regirster!");
         bzero(order, 256);
         snprintf(order, 256,"INSERT INTO user(username, password) VALUES('%s','%s')", name.c_str(), pwd.c_str());
-        std::cout<<order<<std::endl;
+        LOG_DEBUG( "%s", order);
         if(mysql_query(sql, order)) { 
-            std::cout<<"Insert error!"<<std::endl;
+            LOG_DEBUG( "Insert error!");
             flag = false; 
         }
         flag = true;
     }
     SqlConnPool::Instance()->FreeConn(sql);
-    std::cout<<"UserVerify success!!"<<std::endl;
+    LOG_DEBUG( "UserVerify success!!");
     return flag;
 }
 
