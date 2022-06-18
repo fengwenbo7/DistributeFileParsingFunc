@@ -16,7 +16,8 @@ WebServer::WebServer(
     strncat(srcDir_,"resources",16);
     HttpConn::userCount=0;
     HttpConn::srcDir=srcDir_;
-    //todo:sql_conn
+    //sql_conn
+    SqlConnPool::Instance()->Init("localhost",sqlPort,sqlUser,sqlPwd,dbName,connPoolNum);
 
     InitEventMode_(trigMode);
     if(InitSocket_()){
@@ -30,6 +31,13 @@ WebServer::WebServer(
         isClose_=true;
         std::cout<<"========== Server init error!=========="<<std::endl;
     }
+}
+
+WebServer::~WebServer() {
+    close(listenFd_);
+    isClose_ = true;
+    free(srcDir_);
+    SqlConnPool::Instance()->ClosePool();
 }
 
 void WebServer::InitEventMode_(TrigMode trigMode) {

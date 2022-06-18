@@ -18,19 +18,17 @@ void SqlConnPool::Init(const char* host, int port,
             int connSize = 10) {
     assert(connSize > 0);
     for (int i = 0; i < connSize; i++) {
-        MYSQL *sql = nullptr;
-        sql = mysql_init(sql);
-        if (!sql) {
-            std::cout<<"MySql init error!"<<std::endl;
-            assert(sql);
+        MYSQL sql;
+        mysql_init(&sql);
+        if(!mysql_real_connect(&sql, host, user, pwd, dbName, port, nullptr, 0)) {
+            std::cout<<host<<std::endl;
+            std::cout<<user<<std::endl;
+            std::cout<<pwd<<std::endl;
+            std::cout<<dbName<<std::endl;
+            std::cout<<port<<std::endl;
+            std::cout<<"MySql Connect error!"<<mysql_error(&sql)<<" "<<mysql_errno(&sql)<<std::endl;
         }
-        sql = mysql_real_connect(sql, host,
-                                 user, pwd,
-                                 dbName, port, nullptr, 0);
-        if (!sql) {
-            std::cout<<"MySql Connect error!"<<std::endl;
-        }
-        connQue_.push(sql);
+        connQue_.push(&sql);
     }
     MAX_CONN_ = connSize;
     sem_init(&semId_, 0, MAX_CONN_);

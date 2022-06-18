@@ -13,12 +13,13 @@ fengwenbo 2022-06
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <auto_ptr.h>
 #include <memory>
 
 #include "epoller.h"
 #include "../http/http_conn.h"
 #include "../pool/thread_pool.h"
+#include "../pool/sql_conn_pool.h"
+#include "../pool/sql_conn_RAII.h"
 
 enum class TrigMode{
     kNoneET=0,
