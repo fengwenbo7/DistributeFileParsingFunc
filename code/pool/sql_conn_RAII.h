@@ -12,6 +12,9 @@ public:
     SqlConnRAII(MYSQL** sql, SqlConnPool *connpool) {
         assert(connpool);
         *sql = connpool->GetConn();
+        if(!*sql){
+            std::cout<<"conn_pool->GetConn() return nullptr."<<std::endl;
+        }
         sql_ = *sql;
         connpool_ = connpool;
     }
