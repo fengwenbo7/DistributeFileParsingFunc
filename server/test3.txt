@@ -1,0 +1,13 @@
+    // Determine the user friendly name of the current primary by
+    // calling DisplayConfigGetDeviceInfo with a type of
+    // DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME, and the
+    // adapter ID and target ID from the DISPLAYCONFIG_PATH_TARGET_INFO
+    // of the primary path.
+
+    // DisplayConfigGetDeviceInfo can determine the user friendly names
+    // for all of the paths that might be part of the clone.
+    // Allow the user to pick which monitor the clone is enabled on.
+    // Only provide the user options of the paths from the current primary
+    // to targets with monitors that are connected or that are forceable.  
+    // Store a newClonePath pointer to the DISPLAYCONFIG_PATH_INFO that
+    // the user picked.

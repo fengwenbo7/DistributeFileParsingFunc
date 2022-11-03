@@ -1,0 +1,8 @@
+// Determine the size of the path and mode information arrays needed
+// to hold all valid paths by calling GetDisplayConfigBufferSizes
+// with flags=QDC_ALL_PATHS
+
+// Using the returned numPathArrayElements and numModeInfoArrayElements,
+// allocate memory for the path and mode information arrays as follows:
+// pathArray size is numPathArrayElements*sizeof(DISPLAYCONFIG_PATH_INFO)
+// modeInfoArray size is numModeInfoArrayElements*sizeof(DISPLAYCONFIG_MODE_INFO)

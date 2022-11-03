@@ -1,0 +1,7 @@
+    // Obtain the path and mode information for all possible paths by
+    // calling QueryDisplayConfig with flags=QDC_ALL_PATHS and pointers
+    // to the allocated path and mode info arrays.
+
+    // Find the primary path by searching the returned array of
+    // DISPLAYCONFIG_PATH_INFO structs for an active path that is
+    // located at desktop position (0, 0).
